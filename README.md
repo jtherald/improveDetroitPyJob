@@ -8,7 +8,7 @@ Python script to be ran in GCP Cloud Run Job to pull Improve Detroit (SeeClickFi
   - writeDataToBQ(): Inserts json response objects into BigQuery table
 
 `Procfile`
-  - defines python file to execute
+  - defines python file for job to execute
 
 ### Run Locally
 - log in to GCP in the shell using `gcloud auth application-default login`
