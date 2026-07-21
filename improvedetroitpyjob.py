@@ -44,9 +44,6 @@ def getIssues():
             break
     return results;
 
-project_id+"."+dataset_id+"."+"."table_id
-
-
 def getLatestTimestamp():
     #add one second because the AFTER is inclusive and would add a duplicate
     query = ('select FORMAT_TIMESTAMP("%Y-%m-%dT%H:%M:%E*SZ", '
