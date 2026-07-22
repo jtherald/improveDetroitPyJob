@@ -39,6 +39,18 @@ def getIssues():
 
         #new seeclickfix api does not allow you to get pages 26+
         if(next_page > 25):
+            #remove extra fields to save database space
+            for i in results:
+                del i["reporter"]["civic_points"]
+                del i["reporter"]["avatar"]
+                del i["reporter"]["role"]
+                del i["reporter"]["witty_title"]
+                del i["reporter"]["html_url"]
+                del i["request_type"]["related_issues_url"]
+                del i["request_type"]["organization"]
+                del i["request_type"]["url"]
+                del i["request_type"]["title"]
+                del i["url"]
             print("inserting to bq")
             writeDataToBQ(results)
             break
