@@ -38,7 +38,7 @@ def getIssues():
         next_page = response.json()['metadata']['pagination']['next_page']
 
         #new seeclickfix api does not allow you to get pages 26+
-        if(next_page > 25):
+        if(next_page is None or > 25):
             #remove extra fields to save database space
             for i in results:
                 del i["reporter"]["civic_points"]
