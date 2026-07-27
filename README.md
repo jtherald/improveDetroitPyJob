@@ -22,11 +22,13 @@ GCP CLI command to run the job:
 `gcloud run jobs execute improve-detroit-import`
 
 To parse out the bike issues from potholes I create a view from the table, and this view is what feeds the [dashboard](https://datastudio.google.com/u/0/reporting/ee8e458b-94b1-45b5-b93f-359f87e408b7/page/oQ4HF/edit)
-```SELECT id, lat, lng, description, created_at, request_type.id as request_type_id, reporter.id as reporter_id
+```
+SELECT id, lat, lng, description, created_at, request_type.id as request_type_id, reporter.id as reporter_id
 FROM `.improveDetroitJson` 
 where `questions`[SAFE_OFFSET(0)].answer like ('%bike%') 
 or (UPPER(description) like UPPER('%bike%') or UPPER(description) like UPPER('%bicycle%'))
-and not (UPPER(description) like UPPER('%mini bike%') or UPPER(description) like UPPER('%dirt bike%'));```
+and not (UPPER(description) like UPPER('%mini bike%') or UPPER(description) like UPPER('%dirt bike%'));
+```
 
 
 ### Notes:
