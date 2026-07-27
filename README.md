@@ -21,6 +21,13 @@ Create the job (navigate to project root):
 GCP CLI command to run the job:
 `gcloud run jobs execute improve-detroit-import`
 
+To parse out the bike issues from potholes I create a view from the table, and this view is what feeds the [dashboard](https://datastudio.google.com/u/0/reporting/ee8e458b-94b1-45b5-b93f-359f87e408b7/page/oQ4HF/edit)
+```SELECT id, lat, lng, description, created_at, request_type.id as request_type_id, reporter.id as reporter_id
+FROM `.improveDetroitJson` 
+where `questions`[SAFE_OFFSET(0)].answer like ('%bike%') 
+or (UPPER(description) like UPPER('%bike%') or UPPER(description) like UPPER('%bicycle%'))
+and not (UPPER(description) like UPPER('%mini bike%') or UPPER(description) like UPPER('%dirt bike%'));```
+
 
 ### Notes:
 This builds off my [previous code that was written in Java](https://github.com/jtherald/improveDetroitData), more background information is available there. SeeClickFix has changed their API limits, from 100 per page to 20 and also limiting to 25 pages. Each run of this job will only get 500 issues at a time. If this changes you can remove or adjust the `if(next_page > 25)` code and the API call parameter "`per_page":"20"`. This can be scheduled using the GCP Web UI under Jobs->Triggers page
