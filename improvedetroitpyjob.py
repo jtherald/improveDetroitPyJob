@@ -1,7 +1,5 @@
 from google.cloud import bigquery
 import requests
-import pandas as pd
-import os, json
 import time
 
 project_id = 'YOUR_GCP_PROJECT'
@@ -16,11 +14,12 @@ def getIssues():
     seeclickfixURL="https://seeclickfix.com/api/v2/issues"
     results = []
     next_page = 1
-    while(next_page != None):
+    while (next_page is not None) and (next_page <= 25):
         print(next_page)
-        #I need the details and are limited to 20 issues per page
+        #We need the details and are limited to 20 issues per page
         #without details max is 100 per page
         #adjust request_types for your city and needs
+        #new seeclickfix api does not allow you to get pages 26+
         payload = {"place_url":"detroit",
                    "per_page":"20",
                    "page": next_page,
@@ -32,29 +31,31 @@ def getIssues():
                    "request_types":"7047,22880",
                    "fields[issue]":"id,status,summary,description,lat,lng,created_at,acknowledged_at,closed_at,request_type,questions,reporter",
                    }
-        headers = {"Content-Type": "application/json"}
         response = requests.get(seeclickfixURL, params=payload)
         results.extend(response.json()['issues'])
         next_page = response.json()['metadata']['pagination']['next_page']
 
-        #new seeclickfix api does not allow you to get pages 26+
-        if(next_page is None or > 25):
-            #remove extra fields to save database space
-            for i in results:
-                del i["reporter"]["civic_points"]
-                del i["reporter"]["avatar"]
-                del i["reporter"]["role"]
-                del i["reporter"]["witty_title"]
-                del i["reporter"]["html_url"]
-                del i["request_type"]["related_issues_url"]
-                del i["request_type"]["organization"]
-                del i["request_type"]["url"]
-                del i["request_type"]["title"]
-                del i["url"]
-            print("inserting to bq")
-            writeDataToBQ(results)
-            break
-    return results;
+    #remove extra fields to save database space
+    #TODO: a more efficient way to drop these columns
+    for i in results:
+        del i["reporter"]["civic_points"]
+        del i["reporter"]["avatar"]
+        del i["reporter"]["role"]
+        del i["reporter"]["witty_title"]
+        del i["reporter"]["html_url"]
+        del i["request_type"]["related_issues_url"]
+        del i["request_type"]["organization"]
+        del i["request_type"]["url"]
+        del i["request_type"]["title"]
+        del i["url"]
+
+    #only schema detect on the very first insert, saves time and prevents errors with new data
+    if afterDate == "":
+        writeDataToBQ(results, True)
+    else:
+        writeDataToBQ(results, False)
+
+    return results
 
 def getLatestTimestamp():
     #add one second because the AFTER is inclusive and would add a duplicate
@@ -78,8 +79,9 @@ def getLatestTimestamp():
     return ""
 
 
-def writeDataToBQ(data):
-    job_config = bigquery.LoadJobConfig(autodetect=True, source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON)
+def writeDataToBQ(data, isAutoDetect):
+    print("inserting to bq")
+    job_config = bigquery.LoadJobConfig(autodetect=isAutoDetect, source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON)
     job = client.load_table_from_json(data, table, job_config = job_config)
 
 print("starting")
