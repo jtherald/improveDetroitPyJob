@@ -42,7 +42,6 @@ def getIssues():
         del i["reporter"]["avatar"]
         del i["reporter"]["role"]
         del i["reporter"]["witty_title"]
-        del i["reporter"]["html_url"]
         del i["request_type"]["related_issues_url"]
         del i["request_type"]["organization"]
         del i["request_type"]["url"]
